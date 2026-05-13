@@ -1,8 +1,16 @@
-import './App.css'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Scene from "./pages/Scene";
 
 function App() {
-  return <div className='text-3xl font-bold underline'>Maha Mayura Jathakaya</div>
-  
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/scene/:id" element={<Scene />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
