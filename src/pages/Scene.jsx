@@ -75,13 +75,13 @@ export default function Scene() {
             borderRadius: 12,
             padding: "12px 28px",
             color: "#fde047",
-            fontFamily: "'Cinzel Decorative', serif",
+            fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cinzel Decorative', serif",
             fontSize: "0.8rem",
             cursor: "pointer",
             letterSpacing: "0.1em",
           }}
         >
-          Return Home
+          {isSinhala ? "මුල් පිටුවට" : "Return Home"}
         </button>
       </div>
     );
@@ -202,7 +202,7 @@ export default function Scene() {
             borderRadius: 10,
             padding: "8px 16px",
             color: "#c4b8a0",
-            fontFamily: "'Cinzel Decorative', serif",
+            fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cinzel Decorative', serif",
             fontSize: "0.7rem",
             cursor: "pointer",
             transition: "all 0.3s ease",
@@ -217,7 +217,7 @@ export default function Scene() {
             e.target.style.color = "#c4b8a0";
           }}
         >
-          ◁ HOME
+          {isSinhala ? "◁ මුලට" : "◁ HOME"}
         </button>
 
         <span style={{
@@ -408,7 +408,7 @@ export default function Scene() {
                     borderRadius: 12,
                     padding: "12px 24px",
                     color: "#facc15",
-                    fontFamily: "'Cinzel Decorative', serif",
+                    fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cinzel Decorative', serif",
                     fontSize: "0.75rem",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
@@ -423,7 +423,7 @@ export default function Scene() {
                     e.target.style.boxShadow = "none";
                   }}
                 >
-                  ◁ PREV
+                  {isSinhala ? "◁ පෙර" : "◁ PREV"}
                 </button>
               )}
 
@@ -435,7 +435,7 @@ export default function Scene() {
                   borderRadius: 12,
                   padding: "12px 24px",
                   color: "#c4b8a0",
-                  fontFamily: "'Cinzel Decorative', serif",
+                  fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cinzel Decorative', serif",
                   fontSize: "0.75rem",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
@@ -450,7 +450,7 @@ export default function Scene() {
                   e.target.style.color = "#c4b8a0";
                 }}
               >
-                ✦ THORANA
+                {isSinhala ? "✦ තොරණ" : "✦ THORANA"}
               </button>
 
               {sceneIndex < scenes.length - 1 && (
@@ -462,7 +462,7 @@ export default function Scene() {
                     borderRadius: 12,
                     padding: "12px 24px",
                     color: "#facc15",
-                    fontFamily: "'Cinzel Decorative', serif",
+                    fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cinzel Decorative', serif",
                     fontSize: "0.75rem",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
@@ -477,7 +477,7 @@ export default function Scene() {
                     e.target.style.boxShadow = "none";
                   }}
                 >
-                  NEXT ▷
+                  {isSinhala ? "මීළඟ ▷" : "NEXT ▷"}
                 </button>
               )}
             </div>
