@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import scenes from "../data/scenes";
 
 export default function Scene() {
@@ -8,6 +8,8 @@ export default function Scene() {
   const [isSinhala, setIsSinhala] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [displayedText, setDisplayedText] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef(null);
 
   const sceneIndex = scenes.findIndex((s) => s.id === Number(id));
   const scene = scenes[sceneIndex];
@@ -36,6 +38,53 @@ export default function Scene() {
     }, 40);
     return () => clearInterval(interval);
   }, [scene, isSinhala]);
+
+  // Audio Playback Logic
+  useEffect(() => {
+    if (!scene || !scene.audio) return;
+
+    // Stop and cleanup previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    const audio = new Audio(scene.audio);
+    audio.muted = isMuted;
+    audioRef.current = audio;
+
+    const handleAudioEnded = () => {
+      if (sceneIndex < scenes.length - 1) {
+        navigate(`/scene/${scenes[sceneIndex + 1].id}`);
+      }
+    };
+
+    audio.addEventListener("ended", handleAudioEnded);
+
+    const playAudio = () => {
+      audio.play().catch(err => {
+        console.warn("Audio play failed (likely autoplay policy):", err);
+      });
+    };
+
+    // Play after a short delay to ensure UI is ready
+    const timer = setTimeout(playAudio, 500);
+
+    return () => {
+      clearTimeout(timer);
+      audio.removeEventListener("ended", handleAudioEnded);
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+  }, [scene?.id, sceneIndex, navigate]);
+
+  // Sync mute state
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   // Keyboard nav
   useEffect(() => {
@@ -229,28 +278,59 @@ export default function Scene() {
           {String(sceneIndex + 1).padStart(2, "0")} / {String(scenes.length).padStart(2, "0")}
         </span>
 
-        <button
-          onClick={() => setIsSinhala(!isSinhala)}
-          style={{
-            background: "none",
-            border: "1px solid rgba(212,160,23,0.2)",
-            borderRadius: 10,
-            padding: "8px 16px",
-            color: "#c4b8a0",
-            fontFamily: isSinhala ? "'Cinzel Decorative', serif" : "'Noto Serif Sinhala', serif",
-            fontSize: "0.7rem",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.borderColor = "rgba(212,160,23,0.5)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.borderColor = "rgba(212,160,23,0.2)";
-          }}
-        >
-          {isSinhala ? "EN" : "සිං"}
-        </button>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {/* Audio Toggle */}
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            style={{
+              background: "none",
+              border: "1px solid rgba(212,160,23,0.2)",
+              borderRadius: 10,
+              padding: "8px 12px",
+              color: "#c4b8a0",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1rem",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(212,160,23,0.5)";
+              e.currentTarget.style.color = "#fde047";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)";
+              e.currentTarget.style.color = "#c4b8a0";
+            }}
+            title={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? "🔇" : "🔊"}
+          </button>
+
+          <button
+            onClick={() => setIsSinhala(!isSinhala)}
+            style={{
+              background: "none",
+              border: "1px solid rgba(212,160,23,0.2)",
+              borderRadius: 10,
+              padding: "8px 16px",
+              color: "#c4b8a0",
+              fontFamily: isSinhala ? "'Cinzel Decorative', serif" : "'Noto Serif Sinhala', serif",
+              fontSize: "0.7rem",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.borderColor = "rgba(212,160,23,0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.borderColor = "rgba(212,160,23,0.2)";
+            }}
+          >
+            {isSinhala ? "EN" : "සිං"}
+          </button>
+        </div>
       </nav>
 
       <style>
