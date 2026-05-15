@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import scenes from "../data/scenes";
 import backImg from "../assets/budd.png";
 import { Led, LED_SEQ, TICK_INTERVAL, TICK_MOD } from "./LedEffects";
+import LiveChat from "./LiveChat";
 
 function useViewport() {
   const getSize = useCallback(() => {
@@ -283,6 +284,9 @@ export default function Thorana() {
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 50 }}>
         <img src={backImg} alt="Thorana Background" style={{ height: cfg.centerImg, objectFit: "contain" }} />
       </div>
+
+      {/* Live Chat Component */}
+      <LiveChat />
     </div>
   );
 }
