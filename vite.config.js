@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import apiHandler from './api/messages.js'
 
 // Custom middleware to run our Serverless Function inside Vite locally
 function apiMiddleware() {
@@ -9,6 +8,9 @@ function apiMiddleware() {
     name: 'api-middleware',
     configureServer(server) {
       server.middlewares.use('/api/messages', async (req, res) => {
+        // Dynamically import the handler so it doesn't cause build issues on Vercel
+        const { default: apiHandler } = await import('./api/messages.js');
+
         // Vercel helper polyfills
         res.status = (code) => {
           res.statusCode = code;
@@ -26,7 +28,8 @@ function apiMiddleware() {
             try {
               req.body = JSON.parse(body);
               await apiHandler(req, res);
-            } catch (e) {
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
               res.status(400).json({ error: 'Invalid JSON' });
             }
           });
