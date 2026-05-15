@@ -362,7 +362,7 @@ export default function Thorana() {
               Full Screen Mode
             </h2>
             <p style={{ color: "#c4b8a0", fontFamily: "'Noto Serif Sinhala', serif", lineHeight: 1.6, marginBottom: 10 }}>
-              ඩිජිටල් තොරණේ වඩාත් හොඳ අත්දැකීමක් සඳහා Full Screen (සම්පූර්ණ තිරය) භාවිතා කරන්න.
+              ඩිජිටල් තොරණේ වඩාත් හොඳ අත්දැකීමක් සඳහා Full Screen භාවිතා කරන්න.
             </p>
             <p style={{ color: "#c4b8a0", fontFamily: "sans-serif", lineHeight: 1.6, marginBottom: 30, fontSize: "0.9rem", opacity: 0.8 }}>
               For the best immersive experience, please enable Fullscreen.

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -42,10 +42,16 @@ function apiMiddleware() {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    apiMiddleware()
-  ],
+export default defineConfig(({ mode }) => {
+  // Load all env variables (even those without VITE_ prefix) into process.env
+  // so that the local apiMiddleware can access process.env.MONGODB_URI
+  Object.assign(process.env, loadEnv(mode, process.cwd(), ''))
+
+  return {
+    plugins: [
+      react(),
+      tailwindcss(),
+      apiMiddleware()
+    ],
+  }
 })

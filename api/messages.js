@@ -1,6 +1,10 @@
+/* global process */
 import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
 
-const uri = "mongodb+srv://user:1234@thoranachat.f2zjodw.mongodb.net/?appName=thoranachat";
+dotenv.config();
+
+const uri = process.env.MONGODB_URI;
 
 // Connect to MongoDB
 let cachedClient = null;
