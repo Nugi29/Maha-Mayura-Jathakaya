@@ -4,10 +4,15 @@ export default function LiveChat() {
   const [messages, setMessages] = useState([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   useEffect(() => {
@@ -37,10 +42,6 @@ export default function LiveChat() {
   useEffect(() => {
     // Initial fetch
     fetchMessages();
-
-    // Poll every 3 seconds to simulate real-time
-    const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleSend = async (e) => {
@@ -72,7 +73,9 @@ export default function LiveChat() {
   };
 
   return (
-    <div style={{
+    <div 
+      onClick={(e) => e.stopPropagation()}
+      style={{
       position: "absolute",
       bottom: "20px",
       right: "20px",
@@ -85,6 +88,7 @@ export default function LiveChat() {
     }}>
       {/* Messages Area - Transparent overlay style */}
       <div 
+        ref={messagesContainerRef}
         style={{
           maxHeight: "35vh",
           overflowY: "auto",
@@ -147,7 +151,6 @@ export default function LiveChat() {
               </div>
             </div>
           ))}
-          <div ref={messagesEndRef} />
         </div>
       </div>
 

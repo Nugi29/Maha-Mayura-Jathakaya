@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import scenes from "../data/scenes";
-import backImg from "../assets/budd.png";
 import { Led, LED_SEQ, TICK_INTERVAL, TICK_MOD } from "./LedEffects";
 import LiveChat from "./LiveChat";
+import Credits from "./Credits";
+import { useMute } from "../context/MuteContext";
 
 function useViewport() {
   const getSize = useCallback(() => {
@@ -83,8 +84,15 @@ const CONFIG = {
 
 export default function Thorana() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const showCredits = location.state?.showCredits || false;
+  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(() => {
+    return !document.fullscreenElement;
+  });
   const [tick, setTick] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { isMuted, toggleMute } = useMute();
+  const audioRef = useRef(null);
   const viewport = useViewport();
   const cfg = CONFIG[viewport];
 
@@ -107,13 +115,25 @@ export default function Thorana() {
 
   const displayScenes = scenes.slice(0, cfg.sceneCount);
 
+  // Clear the location state so credits don't re-open on page refresh
+  useEffect(() => {
+    if (showCredits) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [showCredits, navigate, location.pathname]);
+
   return (
-    <div style={{
+    <div 
+      onClick={() => navigate('/scene/1')}
+      style={{
       position: "relative", width: "100%", height: "100vh",
       background: "#000", overflow: "hidden",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontFamily: "'Cinzel Decorative', serif", userSelect: "none",
+      cursor: "pointer",
     }}>
+      {/* Background Audio */}
+      <audio ref={audioRef} src="/bg-music.mp3" autoPlay loop muted={isMuted} />
 
       {/* Background Image — transparent */}
       <div style={{
@@ -192,9 +212,27 @@ export default function Thorana() {
         }} />
       </div>
 
+      {/* Sound Toggle - Top Right */}
+      <button
+        onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+        title={isMuted ? "Unmute" : "Mute"}
+        style={{
+          position: "absolute", top: 16, right: 64, zIndex: 100,
+          background: "rgba(15,5,32,0.5)", backdropFilter: "blur(8px)",
+          border: "1px solid rgba(212,160,23,0.3)", borderRadius: 10,
+          padding: "8px 10px", cursor: "pointer", color: "#c4b8a0",
+          fontSize: "1.1rem", display: "flex", alignItems: "center",
+          justifyContent: "center", transition: "all 0.3s ease", lineHeight: 1,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(212,160,23,0.7)"; e.currentTarget.style.color = "#fde047"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(212,160,23,0.3)"; e.currentTarget.style.color = "#c4b8a0"; }}
+      >
+        {isMuted ? "🔇" : "🔊"}
+      </button>
+
       {/* Fullscreen Toggle - Top Right */}
       <button
-        onClick={toggleFullscreen}
+        onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
         style={{
           position: "absolute", top: 16, right: 16, zIndex: 100,
@@ -209,6 +247,22 @@ export default function Thorana() {
       >
         ⛶
       </button>
+
+      {/* Buddhist Flag */}
+      <img
+        src="/Buddhist_flag.gif"
+        alt="Buddhist Flag"
+        style={{
+          position: "absolute",
+          top: 64, right: 16, zIndex: 100,
+          height: "60px",
+          borderRadius: "6px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+          opacity: 0.9,
+          border: "1px solid rgba(255,255,255,0.1)",
+          pointerEvents: "none",
+        }}
+      />
 
       {/* Concentric LED Rings */}
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
@@ -257,7 +311,7 @@ export default function Thorana() {
 
               {/* Scene circle */}
               <div
-                onClick={() => navigate(`/scene/${scene.id}`)}
+                onClick={(e) => { e.stopPropagation(); navigate(`/scene/${scene.id}`); }}
                 style={{
                   position: "relative",
                   width: cfg.sceneSize, height: cfg.sceneSize,
@@ -282,11 +336,72 @@ export default function Thorana() {
 
       {/* Center Background Image */}
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 50 }}>
-        <img src={backImg} alt="Thorana Background" style={{ height: cfg.centerImg, objectFit: "contain" }} />
+        <img src="/budd.png" alt="Thorana Background" style={{ height: cfg.centerImg, objectFit: "contain" }} />
       </div>
 
       {/* Live Chat Component */}
       <LiveChat />
+
+      {/* Fullscreen Prompt */}
+      {showFullscreenPrompt && (
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute", inset: 0, zIndex: 2000,
+            background: "rgba(0, 0, 0, 0.85)", backdropFilter: "blur(10px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexDirection: "column", pointerEvents: "auto",
+          }}
+        >
+          <div style={{
+            background: "rgba(15,5,32,0.8)", border: "1px solid rgba(212,160,23,0.5)",
+            borderRadius: 16, padding: "40px", maxWidth: 500, textAlign: "center",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.8)"
+          }}>
+            <h2 style={{ color: "#facc15", fontFamily: "'Noto Serif Sinhala', serif", marginBottom: 20 }}>
+              Full Screen Mode
+            </h2>
+            <p style={{ color: "#c4b8a0", fontFamily: "'Noto Serif Sinhala', serif", lineHeight: 1.6, marginBottom: 10 }}>
+              ඩිජිටල් තොරණේ වඩාත් හොඳ අත්දැකීමක් සඳහා Full Screen (සම්පූර්ණ තිරය) භාවිතා කරන්න.
+            </p>
+            <p style={{ color: "#c4b8a0", fontFamily: "sans-serif", lineHeight: 1.6, marginBottom: 30, fontSize: "0.9rem", opacity: 0.8 }}>
+              For the best immersive experience, please enable Fullscreen.
+            </p>
+            <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  audioRef.current?.play().catch(() => {});
+                  setShowFullscreenPrompt(false);
+                }}
+                style={{
+                  background: "transparent", border: "1px solid rgba(212,160,23,0.5)",
+                  color: "#c4b8a0", padding: "10px 24px", borderRadius: 8, cursor: "pointer",
+                }}
+              >
+                Later
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  audioRef.current?.play().catch(() => {});
+                  document.documentElement.requestFullscreen().catch(() => {});
+                  setShowFullscreenPrompt(false);
+                }}
+                style={{
+                  background: "linear-gradient(135deg, #b8860b, #d4af37)", border: "none",
+                  color: "#000", fontWeight: "bold", padding: "10px 24px", borderRadius: 8, cursor: "pointer",
+                }}
+              >
+                Enter Fullscreen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Credits Component */}
+      <Credits initialOpen={showCredits} />
     </div>
   );
 }

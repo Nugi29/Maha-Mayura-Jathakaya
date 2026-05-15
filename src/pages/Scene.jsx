@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import scenes from "../data/scenes";
 import { Led, LedStrip, LedRing, LED_SEQ, TICK_INTERVAL, TICK_MOD } from "../components/LedEffects";
+import { useMute } from "../context/MuteContext";
 
 // Nav button helper
 const NavBtn = ({ onClick, children, gold = false, onMouseEnter, onMouseLeave, style = {} }) => (
@@ -27,7 +28,7 @@ export default function Scene() {
   const [isSinhala, setIsSinhala] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [displayedText, setDisplayedText] = useState("");
-  const [isMuted, setIsMuted] = useState(false);
+  const { isMuted, toggleMute } = useMute();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [tick, setTick] = useState(0);
   const audioRef = useRef(null);
@@ -68,7 +69,13 @@ export default function Scene() {
     const audio = new Audio(scene.audio);
     audio.muted = isMuted;
     audioRef.current = audio;
-    const onEnd = () => { if (sceneIndex < scenes.length - 1) navigate(`/scene/${scenes[sceneIndex + 1].id}`); };
+    const onEnd = () => { 
+      if (sceneIndex < scenes.length - 1) {
+        navigate(`/scene/${scenes[sceneIndex + 1].id}`); 
+      } else {
+        navigate('/', { state: { showCredits: true } });
+      }
+    };
     audio.addEventListener("ended", onEnd);
     const t = setTimeout(() => audio.play().catch(() => {}), 500);
     return () => { clearTimeout(t); audio.removeEventListener("ended", onEnd); audio.pause(); audio.src = ""; audioRef.current = null; };
@@ -225,7 +232,7 @@ export default function Scene() {
 
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {/* Audio */}
-          <button onClick={() => setIsMuted(!isMuted)} title={isMuted ? "Unmute" : "Mute"} style={{
+          <button onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"} style={{
             background: "none", border: "1px solid rgba(212,160,23,0.2)", borderRadius: 10,
             padding: "6px 10px", color: "#c4b8a0", cursor: "pointer", transition: "all 0.3s ease",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.9rem",
