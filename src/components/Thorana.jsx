@@ -36,10 +36,10 @@ const CONFIG = {
     sceneRadius: 140,
     sceneSize: 64,
     ledRingRadius: 42,
-    ledRingCount: 10,
+    ledRingCount: 18,
     ledSize: 4,
-    rings: [28, 48, 68, 90],
-    ringDotCount: 14,
+    rings: [28, 48, 68, 90, 112],
+    ringDotCount: 18,
     ringDotSize: 4,
     centerImg: 100,
     sceneFontSize: "1.8rem",
@@ -49,10 +49,10 @@ const CONFIG = {
     sceneRadius: 190,
     sceneSize: 96,
     ledRingRadius: 56,
-    ledRingCount: 12,
+    ledRingCount: 24,
     ledSize: 5,
-    rings: [36, 62, 88, 114],
-    ringDotCount: 16,
+    rings: [36, 62, 88, 114, 140, 166],
+    ringDotCount: 20,
     ringDotSize: 5,
     centerImg: 130,
     sceneFontSize: "2.2rem",
@@ -62,10 +62,10 @@ const CONFIG = {
     sceneRadius: 270,
     sceneSize: 128,
     ledRingRadius: 72,
-    ledRingCount: 14,
+    ledRingCount: 30,
     ledSize: 5,
-    rings: [50, 80, 110, 140, 170],
-    ringDotCount: 18,
+    rings: [50, 80, 110, 140, 170, 200, 230],
+    ringDotCount: 24,
     ringDotSize: 5,
     centerImg: 160,
     sceneFontSize: "2.2rem",
@@ -75,10 +75,10 @@ const CONFIG = {
     sceneRadius: 310,
     sceneSize: 144,
     ledRingRadius: 85,
-    ledRingCount: 16,
+    ledRingCount: 36,
     ledSize: 6,
-    rings: [50, 85, 120, 155, 190],
-    ringDotCount: 20,
+    rings: [50, 85, 120, 155, 190, 225, 260, 295],
+    ringDotCount: 28,
     ringDotSize: 6,
     centerImg: 200,
     sceneFontSize: "3rem",
@@ -277,22 +277,31 @@ export default function Thorana() {
 
       {/* Concentric LED Rings */}
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-        {cfg.rings.map((radius, rIdx) => (
-          <div key={rIdx} style={{ position: "absolute" }}>
-            {[...Array(cfg.ringDotCount)].map((_, i) => {
-              const angle = (i / cfg.ringDotCount) * 360;
-              return (
-                <div key={i} style={{ position: "absolute", transform: `rotate(${angle}deg) translate(${radius}px)` }}>
-                  <Led
-                    color={LED_SEQ[(i + rIdx) % 5]}
-                    isOn={(i + rIdx - Math.floor(tick / 2) + 100000) % 10 < 3}
-                    size={cfg.ringDotSize}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        ))}
+        {cfg.rings.map((radius, rIdx) => {
+          const dotsInRing = Math.floor(cfg.ringDotCount * (1 + rIdx * 0.4));
+          return (
+            <div key={rIdx} style={{ position: "absolute" }}>
+              {[...Array(dotsInRing)].map((_, i) => {
+                const angle = (i / dotsInRing) * 360;
+                const pattern = Math.floor(tick / 40) % 4;
+                let isOn = false;
+                if (pattern === 0) isOn = (i + rIdx - Math.floor(tick / 2) + 100000) % 10 < 3;
+                else if (pattern === 1) isOn = (rIdx + Math.floor(tick / 4)) % 2 === 0;
+                else if (pattern === 2) isOn = (i - rIdx + tick + 100000) % 8 < 4;
+                else isOn = (i % 2 === 0) ? (tick % 4 < 2) : (tick % 4 >= 2);
+                return (
+                  <div key={i} style={{ position: "absolute", transform: `rotate(${angle}deg) translate(${radius}px)` }}>
+                    <Led
+                      color={LED_SEQ[(i + rIdx) % 5]}
+                      isOn={isOn}
+                      size={cfg.ringDotSize}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
       {/* Outer Scene Panels */}
@@ -306,39 +315,83 @@ export default function Thorana() {
             }}>
               {/* Per-scene LED ring */}
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {[...Array(cfg.ledRingCount)].map((_, i) => (
-                  <div key={i} style={{
-                    position: "absolute",
-                    transform: `rotate(${(i / cfg.ledRingCount) * 360}deg) translate(${cfg.ledRingRadius}px)`,
-                  }}>
-                    <Led
-                      color={LED_SEQ[(i + idx) % 5]}
-                      isOn={(i - tick + 60000) % 6 < 2}
-                      size={cfg.ledSize}
-                    />
-                  </div>
-                ))}
+                {[...Array(cfg.ledRingCount)].map((_, i) => {
+                  const pattern = Math.floor(tick / 40) % 4;
+                  let isOn = false;
+                  if (pattern === 0) isOn = (i - tick + 100000) % 6 < 2;
+                  else if (pattern === 1) isOn = (i + tick * 2 + 100000) % 8 < 4;
+                  else if (pattern === 2) isOn = (i % 2 === 0) ? (tick % 2 === 0) : (tick % 2 !== 0);
+                  else isOn = (Math.floor(i / 2) - tick + 100000) % 5 < 2;
+                  return (
+                    <div key={i} style={{
+                      position: "absolute",
+                      transform: `rotate(${(i / cfg.ledRingCount) * 360}deg) translate(${cfg.ledRingRadius}px)`,
+                    }}>
+                      <Led
+                        color={LED_SEQ[(i + idx) % 5]}
+                        isOn={isOn}
+                        size={cfg.ledSize}
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Scene circle */}
+              {/* Scene wrapper */}
               <div
                 onClick={(e) => { e.stopPropagation(); navigate(`/scene/${scene.id}`); }}
                 style={{
                   position: "relative",
-                  width: cfg.sceneSize, height: cfg.sceneSize,
-                  borderRadius: "50%", overflow: "hidden",
-                  border: "2px solid rgba(255,255,255,0.2)",
-                  cursor: "pointer", transition: "all 0.3s ease",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#fff"; e.currentTarget.style.transform = "scale(1.05)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; e.currentTarget.style.transform = "scale(1)"; }}
+                onMouseEnter={(e) => {
+                  const circle = e.currentTarget.querySelector('.scene-circle');
+                  if (circle) circle.style.borderColor = "#fff";
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  const circle = e.currentTarget.querySelector('.scene-circle');
+                  if (circle) circle.style.borderColor = "rgba(255,255,255,0.2)";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
               >
-                <img src={scene.image} alt={`Scene ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.75)" }} />
+                {/* Scene circle */}
+                <div
+                  className="scene-circle"
+                  style={{
+                    width: cfg.sceneSize, height: cfg.sceneSize,
+                    borderRadius: "50%", overflow: "hidden",
+                    border: "2px solid rgba(255,255,255,0.2)",
+                    transition: "all 0.3s ease",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  <img src={scene.image} alt={`Scene ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.9)" }} />
+                </div>
+                
+                {/* Notification Bubble Number */}
                 <div style={{
-                  position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#fff", fontSize: cfg.sceneFontSize, fontWeight: 900, opacity: 0.2,
-                }}>{idx + 1}</div>
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
+                  width: "clamp(24px, 3vw, 32px)",
+                  height: "clamp(24px, 3vw, 32px)",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #facc15, #b8860b)",
+                  color: "#000",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "clamp(0.8rem, 1.5vw, 1.1rem)",
+                  fontWeight: 900,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.5)",
+                  border: "2px solid rgba(15,5,32,0.8)",
+                  zIndex: 10,
+                  fontFamily: "'Inter', sans-serif"
+                }}>
+                  {idx + 1}
+                </div>
               </div>
             </div>
           );
