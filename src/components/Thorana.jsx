@@ -9,8 +9,11 @@ import { useMute } from "../context/MuteContext";
 function useViewport() {
   const getSize = useCallback(() => {
     const w = window.innerWidth;
-    if (w < 400)  return "xs";
-    if (w < 640)  return "sm";
+    const h = window.innerHeight;
+    if (h < 400) return "xs";
+    if (h < 550) return "sm";
+    if (w < 400) return "xs";
+    if (w < 640) return "sm";
     if (w < 1024) return "md";
     return "lg";
   }, []);
@@ -86,9 +89,6 @@ export default function Thorana() {
   const navigate = useNavigate();
   const location = useLocation();
   const showCredits = location.state?.showCredits || false;
-  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(() => {
-    return !document.fullscreenElement;
-  });
   const [tick, setTick] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { isMuted, toggleMute } = useMute();
@@ -99,6 +99,20 @@ export default function Thorana() {
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => (t + 1) % TICK_MOD), TICK_INTERVAL);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleStart = () => {
+      audioRef.current?.play().catch(() => {});
+    };
+    window.addEventListener('app-started', handleStart);
+    document.addEventListener('click', handleStart, { once: true });
+    // Attempt play immediately in case audio is unlocked
+    audioRef.current?.play().catch(() => {});
+    return () => {
+      window.removeEventListener('app-started', handleStart);
+      document.removeEventListener('click', handleStart);
+    };
   }, []);
 
   // Fullscreen sync
@@ -256,10 +270,7 @@ export default function Thorana() {
           position: "absolute",
           top: 64, right: 16, zIndex: 100,
           height: "60px",
-          borderRadius: "6px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
           opacity: 0.9,
-          border: "1px solid rgba(255,255,255,0.1)",
           pointerEvents: "none",
         }}
       />
@@ -274,7 +285,7 @@ export default function Thorana() {
                 <div key={i} style={{ position: "absolute", transform: `rotate(${angle}deg) translate(${radius}px)` }}>
                   <Led
                     color={LED_SEQ[(i + rIdx) % 5]}
-                    isOn={(i + rIdx + Math.floor(tick / 2)) % 10 < 3}
+                    isOn={(i + rIdx - Math.floor(tick / 2) + 100000) % 10 < 3}
                     size={cfg.ringDotSize}
                   />
                 </div>
@@ -302,7 +313,7 @@ export default function Thorana() {
                   }}>
                     <Led
                       color={LED_SEQ[(i + idx) % 5]}
-                      isOn={(i + tick) % 6 < 2}
+                      isOn={(i - tick + 60000) % 6 < 2}
                       size={cfg.ledSize}
                     />
                   </div>
@@ -341,64 +352,6 @@ export default function Thorana() {
 
       {/* Live Chat Component */}
       <LiveChat />
-
-      {/* Fullscreen Prompt */}
-      {showFullscreenPrompt && (
-        <div 
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            position: "absolute", inset: 0, zIndex: 2000,
-            background: "rgba(0, 0, 0, 0.85)", backdropFilter: "blur(10px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexDirection: "column", pointerEvents: "auto",
-          }}
-        >
-          <div style={{
-            background: "rgba(15,5,32,0.8)", border: "1px solid rgba(212,160,23,0.5)",
-            borderRadius: 16, padding: "40px", maxWidth: 500, textAlign: "center",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.8)"
-          }}>
-            <h2 style={{ color: "#facc15", fontFamily: "'Noto Serif Sinhala', serif", marginBottom: 20 }}>
-              Full Screen Mode
-            </h2>
-            <p style={{ color: "#c4b8a0", fontFamily: "'Noto Serif Sinhala', serif", lineHeight: 1.6, marginBottom: 10 }}>
-              ඩිජිටල් තොරණේ වඩාත් හොඳ අත්දැකීමක් සඳහා Full Screen භාවිතා කරන්න.
-            </p>
-            <p style={{ color: "#c4b8a0", fontFamily: "sans-serif", lineHeight: 1.6, marginBottom: 30, fontSize: "0.9rem", opacity: 0.8 }}>
-              For the best immersive experience, please enable Fullscreen.
-            </p>
-            <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  audioRef.current?.play().catch(() => {});
-                  setShowFullscreenPrompt(false);
-                }}
-                style={{
-                  background: "transparent", border: "1px solid rgba(212,160,23,0.5)",
-                  color: "#c4b8a0", padding: "10px 24px", borderRadius: 8, cursor: "pointer",
-                }}
-              >
-                Later
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  audioRef.current?.play().catch(() => {});
-                  document.documentElement.requestFullscreen().catch(() => {});
-                  setShowFullscreenPrompt(false);
-                }}
-                style={{
-                  background: "linear-gradient(135deg, #b8860b, #d4af37)", border: "none",
-                  color: "#000", fontWeight: "bold", padding: "10px 24px", borderRadius: 8, cursor: "pointer",
-                }}
-              >
-                Enter Fullscreen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Credits Component */}
       <Credits initialOpen={showCredits} />

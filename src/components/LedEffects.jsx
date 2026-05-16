@@ -49,7 +49,7 @@ export const LedStrip = ({ count, tick, offset = 0, size = 5, vertical = false }
       <Led
         key={i}
         color={LED_SEQ[(i + offset) % 5]}
-        isOn={(i + offset + Math.floor(tick / 2)) % 8 < 3}
+        isOn={(i + offset - Math.floor(tick / 2) + 80000) % 8 < 3}
         size={size}
       />
     ))}
@@ -78,7 +78,7 @@ export const LedRing = ({ count, radius, tick, offset = 0, size = 5 }) => (
       >
         <Led
           color={LED_SEQ[(i + offset) % 5]}
-          isOn={(i + offset + Math.floor(tick / 2)) % 6 < 2}
+          isOn={(i + offset - Math.floor(tick / 2) + 60000) % 6 < 2}
           size={size}
         />
       </div>

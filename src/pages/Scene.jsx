@@ -105,6 +105,19 @@ export default function Scene() {
     return () => window.removeEventListener("keydown", h);
   }, [sceneIndex, navigate]);
 
+  const [windowSize, setWindowSize] = useState({
+    w: typeof window !== "undefined" ? window.innerWidth : 1024,
+    h: typeof window !== "undefined" ? window.innerHeight : 768
+  });
+
+  useEffect(() => {
+    const handleResize = () => setWindowSize({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowSize.w < 768 && windowSize.h > windowSize.w;
+
   if (!scene) {
     return (
       <div style={{ minHeight: "100vh", background: "#050208", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#c4b8a0", fontFamily: "'Cinzel Decorative', serif", gap: 20 }}>
@@ -116,8 +129,6 @@ export default function Scene() {
       </div>
     );
   }
-
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
     <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at 50% 30%, #1a0a2e 0%, #0f0520 40%, #050208 80%)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
@@ -132,13 +143,18 @@ export default function Scene() {
           80%,100%{border-color:#FF6600;filter:drop-shadow(0 0 10px #FF6600)}
         }
         #scene-thumb-bar::-webkit-scrollbar{display:none}
-        @media(max-width:767px){
+        @media(max-width:767px) and (orientation: portrait){
           .scene-sidebar{display:none !important}
           .scene-main-layout{flex-direction:column !important; gap:20px !important; padding:10px !important}
           .scene-img-col{max-width:280px !important; flex:none !important}
           .scene-text-col{flex:none !important; max-width:100% !important}
         }
-        @media(min-width:768px) and (max-width:1023px){
+        @media(max-height:500px) and (orientation: landscape){
+          .scene-main-layout{gap:10px !important; padding:10px 40px !important; align-items:center !important;}
+          .scene-img-col{max-width:160px !important; flex:none !important}
+          .scene-text-col{flex:1 !important; max-width:100% !important; gap:8px !important;}
+        }
+        @media(min-width:768px) and (max-width:1023px) and (min-height:501px){
           .scene-main-layout{gap:30px !important}
           .scene-img-col{max-width:350px !important}
         }
@@ -171,7 +187,7 @@ export default function Scene() {
       }}>
         {scenes.map((s, i) => (
           <div key={s.id} onClick={() => navigate(`/scene/${s.id}`)} style={{
-            width: 40, height: 40, borderRadius: 10, overflow: "hidden",
+            width: windowSize.h <= 500 ? 30 : 40, height: windowSize.h <= 500 ? 30 : 40, borderRadius: 10, overflow: "hidden",
             border: i === sceneIndex ? "2px solid #facc15" : "1px solid rgba(212,160,23,0.2)",
             cursor: "pointer", opacity: i === sceneIndex ? 1 : 0.55, flexShrink: 0,
             transition: "all 0.3s ease",
@@ -193,7 +209,7 @@ export default function Scene() {
         alignItems: "center", padding: "40px 2px", zIndex: 50, pointerEvents: "none",
       }}>
         {[...Array(20)].map((_, i) => (
-          <Led key={i} color={LED_SEQ[i % 5]} isOn={(i + Math.floor(tick / 2)) % 7 < 3} size={4} />
+          <Led key={i} color={LED_SEQ[i % 5]} isOn={(i - Math.floor(tick / 2) + 70000) % 7 < 3} size={windowSize.h <= 500 ? 2 : 4} />
         ))}
       </div>
 
@@ -204,7 +220,7 @@ export default function Scene() {
         alignItems: "center", padding: "40px 2px", zIndex: 50, pointerEvents: "none",
       }}>
         {[...Array(20)].map((_, i) => (
-          <Led key={i} color={LED_SEQ[(i + 2) % 5]} isOn={(i + 2 + Math.floor(tick / 2)) % 7 < 3} size={4} />
+          <Led key={i} color={LED_SEQ[(i + 2) % 5]} isOn={(i + 2 - Math.floor(tick / 2) + 70000) % 7 < 3} size={windowSize.h <= 500 ? 2 : 4} />
         ))}
       </div>
 
@@ -329,7 +345,7 @@ export default function Scene() {
         }}>
           <h1 style={{
             fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cinzel Decorative', serif",
-            fontSize: isSinhala ? "clamp(1.2rem, 3.5vw, 2rem)" : "clamp(1rem, 3vw, 1.6rem)",
+            fontSize: isSinhala ? (windowSize.h <= 500 ? "1.1rem" : "clamp(1.2rem, 3.5vw, 2rem)") : (windowSize.h <= 500 ? "0.9rem" : "clamp(1rem, 3vw, 1.6rem)"),
             fontWeight: 700,
             background: "linear-gradient(135deg, #fde047, #facc15, #d4a017)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
@@ -347,10 +363,10 @@ export default function Scene() {
 
           <p style={{
             fontFamily: isSinhala ? "'Noto Serif Sinhala', serif" : "'Cormorant Garamond', serif",
-            fontSize: isSinhala ? "clamp(0.85rem, 2vw, 1.15rem)" : "clamp(0.95rem, 2vw, 1.3rem)",
-            color: "#c4b8a0", textAlign: "center", lineHeight: 1.9,
+            fontSize: isSinhala ? (windowSize.h <= 500 ? "0.85rem" : "clamp(0.85rem, 2vw, 1.15rem)") : (windowSize.h <= 500 ? "0.9rem" : "clamp(0.95rem, 2vw, 1.3rem)"),
+            color: "#c4b8a0", textAlign: "center", lineHeight: windowSize.h <= 500 ? 1.5 : 1.9,
             maxWidth: 700, padding: "0 8px", whiteSpace: "pre-wrap",
-            minHeight: isMobile ? "120px" : "160px", margin: 0,
+            minHeight: isMobile ? (windowSize.h <= 500 ? "70px" : "120px") : "160px", margin: 0,
           }}>
             {displayedText}
             <span style={{

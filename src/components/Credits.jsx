@@ -1,7 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Credits({ initialOpen = false }) {
   const [isOpen, setIsOpen] = useState(initialOpen);
+  const scrollRef = useRef(null);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const remainderRef = useRef(0);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAutoScrolling(true);
+      if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !isAutoScrolling) return;
+
+    let animationFrameId;
+    const scroll = () => {
+      if (scrollRef.current) {
+        remainderRef.current += 0.8; // scroll speed
+        if (remainderRef.current >= 1) {
+          const toAdd = Math.floor(remainderRef.current);
+          scrollRef.current.scrollTop += toAdd;
+          remainderRef.current -= toAdd;
+          
+          // Stop if reached bottom
+          if (scrollRef.current.scrollTop + scrollRef.current.clientHeight >= scrollRef.current.scrollHeight - 1) {
+            setIsAutoScrolling(false);
+            return;
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isOpen, isAutoScrolling]);
+
+  const handleUserInteraction = () => {
+    setIsAutoScrolling(false);
+  };
 
   return (
     <>
@@ -77,18 +117,25 @@ export default function Credits({ initialOpen = false }) {
           </button>
 
           {/* Credits Container */}
-          <div style={{
+          <div 
+            ref={scrollRef}
+            onWheel={handleUserInteraction}
+            onTouchMove={handleUserInteraction}
+            onMouseDown={handleUserInteraction}
+            className="credits-container"
+            style={{
             position: "relative",
             width: "90%", maxWidth: "800px",
             height: "70vh",
-            overflow: "hidden",
+            overflowY: "auto",
+            scrollbarWidth: "none", // Firefox
+            msOverflowStyle: "none", // IE
             maskImage: "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
             WebkitMaskImage: "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
           }}>
             <style>{`
-              @keyframes creditsScroll {
-                0% { transform: translateY(100%); }
-                100% { transform: translateY(-100%); }
+              .credits-container::-webkit-scrollbar {
+                display: none;
               }
               .credits-content p {
                 margin: 8px 0;
@@ -104,16 +151,12 @@ export default function Credits({ initialOpen = false }) {
             `}</style>
 
             <div className="credits-content" style={{
-              animation: "creditsScroll 25s linear infinite",
               textAlign: "center",
               color: "#c4b8a0",
               fontFamily: "'Cinzel Decorative', serif",
-              padding: "20px 0",
-              height: "100%",
-            }}
-              onMouseEnter={(e) => e.currentTarget.style.animationPlayState = "paused"}
-              onMouseLeave={(e) => e.currentTarget.style.animationPlayState = "running"}
-            >
+              paddingTop: "70vh",
+              paddingBottom: "35vh",
+            }}>
               <h2 style={{
                 color: "#facc15",
                 fontSize: "clamp(2rem, 5vw, 3rem)",
@@ -125,15 +168,12 @@ export default function Credits({ initialOpen = false }) {
               </h2>
               <p style={{ letterSpacing: "0.2em", color: "rgba(196,184,160,0.7)" }}>THE GREAT PEACOCK</p>
 
-              <h3>Concept & Direction</h3>
-              <p>Nugitha Disas</p>
-
-              <h3>Lead Developer & Designer</h3>
+              <h3>Concept, Developer & Designer</h3>
               <p>Nugitha Disas</p>
               <a href="https://github.com/nugi29" target="_blank">@nugi29</a>
 
-              <h3>Narrative Translation & Content</h3>
-              <p>Chatgpt</p>
+              <h3>Narrative & Content</h3>
+              <p>පන්සීය පනස් ජාතක පොත | Pansiya Panas Jathaka Potha</p>
 
               <h3>Digital Assets</h3>
               <p>Google Search Engine and Images</p>
