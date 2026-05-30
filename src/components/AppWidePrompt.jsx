@@ -115,9 +115,17 @@ export default function AppWidePrompt({ children }) {
             <p style={{ color: "#c4b8a0", fontFamily: "'Noto Serif Sinhala', serif", lineHeight: 1.6, marginBottom: 10 }}>
               ඩිජිටල් තොරණේ වඩාත් හොඳ අත්දැකීමක් සඳහා Full Screen භාවිතා කරන්න.
             </p>
-            <p style={{ color: "#c4b8a0", fontFamily: "sans-serif", lineHeight: 1.6, marginBottom: 30, fontSize: "0.9rem", opacity: 0.8 }}>
+            <p style={{ color: "#c4b8a0", fontFamily: "sans-serif", lineHeight: 1.6, marginBottom: 15, fontSize: "0.9rem", opacity: 0.8 }}>
               For the best immersive experience, please enable Fullscreen.
             </p>
+            <div style={{ background: "rgba(212,160,23,0.1)", padding: "12px", borderRadius: "8px", border: "1px dashed rgba(212,160,23,0.3)", marginBottom: 30 }}>
+              <p style={{ color: "#facc15", fontFamily: "'Noto Serif Sinhala', serif", lineHeight: 1.6, margin: 0, fontSize: "0.95rem" }}>
+                මුල සිට නැරඹීමට බුදු රුව මත click කරන්න.
+              </p>
+              <p style={{ color: "#c4b8a0", fontFamily: "sans-serif", lineHeight: 1.6, margin: 0, marginTop: "4px", fontSize: "0.8rem", opacity: 0.8 }}>
+                Click on the Buddha statue to view from the beginning.
+              </p>
+            </div>
             <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
               <button
                 onClick={dismissPrompt}
